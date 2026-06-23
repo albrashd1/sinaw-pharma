@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#188b86">
+<meta name="description" content="Sinaw Pharma Book — a modern apothecary library of clinical documents.">
+<title>Sinaw Pharma Book — The Apothecary Library</title>
+<!-- ↓↓↓ SET THIS to your deployed Cloudflare Worker URL (no trailing slash) ↓↓↓ -->
+<meta name="sinaw-api" content="https://sinaw-pharma-api.sinaw20003.workers.dev">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Noto+Kufi+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="bgfill"></div>
+
+<div class="bar">
+  <button class="brand" id="brandBtn" aria-label="Home">
+    <span class="seal"><img id="brandLogo" alt="Sinaw Pharma Book"></span>
+    <span class="t"><strong>Sinaw Pharma Book</strong><small>المكتبة الإلكترونية لصيدلية سِناو</small></span>
+  </button>
+  <nav class="nav">
+    <button class="lang" id="navLang">العربية</button>
+    <button class="install-btn" id="installBtn" style="display:none">Install</button>
+    <button id="navLib">Library</button>
+    <button class="solid" id="navDisp">Dispensary</button>
+  </nav>
+</div>
+
+<main id="app"><div class="center-load"><div class="spinner"></div></div></main>
+<footer><span id="footMain">Sinaw Pharma Book · A modern apothecary library of clinical imaging &amp; documents</span><br><span class="ar">صيدلية سِناو — مكتبة إلكترونية حديثة</span></footer>
+
+<div class="scrim" id="scrim" role="dialog" aria-modal="true"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="/assets.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
