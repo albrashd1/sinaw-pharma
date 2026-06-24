@@ -508,9 +508,11 @@ async function doDownload(fileId){
     const ext=MIME_EXT[mime]||mime.split('/').pop()||'bin';
     const filename=`${fname}.${ext}`;
 
-    // ── iOS / modern mobile: Web Share API ──────────────────────────
+    // ── iOS / Android only: Web Share API ───────────────────────────
     // Shows "Save to Files", "Save to Photos", AirDrop, WhatsApp, etc.
-    if(typeof navigator.canShare==='function'){
+    // Skipped on desktop — Windows/Mac share panel is not useful for downloads.
+    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(isMobile&&typeof navigator.canShare==='function'){
       const shareFile=new File([blob],filename,{type:mime});
       if(navigator.canShare({files:[shareFile]})){
         await navigator.share({files:[shareFile],title:fname});
@@ -519,7 +521,7 @@ async function doDownload(fileId){
       }
     }
 
-    // ── Desktop / Android: blob URL with correct filename & extension ─
+    // ── Desktop + Android fallback: blob URL with correct filename ───
     // Using a blob: URL ensures the browser uses our filename, not the server's.
     const blobUrl=URL.createObjectURL(new Blob([blob],{type:mime}));
     const a=document.createElement('a');
