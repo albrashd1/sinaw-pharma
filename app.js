@@ -1,7 +1,7 @@
 /* Sinaw Pharma Book — frontend app v3 */
 
 const API = (document.querySelector('meta[name="sinaw-api"]')?.content
-            || 'https://YOUR-WORKER.workers.dev').replace(/\/+$/,'');
+            || 'https://sinaw-pharma-api.sinaw20003.workers.dev').replace(/\/+$/,'');
 
 const COVER_ORDER=['warfarin','bp','skincare','firstaid','sprays','motherbaby','general'];
 const COVER_LABELS={
@@ -144,8 +144,8 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function collName(c){return lang==='ar'?(c.name_ar||c.name_en):(c.name_en||c.name_ar);}
 function collDesc(c){return lang==='ar'?(c.desc_ar||c.desc_en):(c.desc_en||c.desc_ar);}
 function fileName(x){return lang==='ar'?(x.name_ar||x.name_en):(x.name_en||x.name_ar);}
-function fileUrl(id,preview){return `${API}/files/${id}?lang=${lang}${preview?'&preview=1':''}`;}
-function coverSrc(c){if(c.cover&&window.COVERS[c.cover])return window.COVERS[c.cover];if(c.coverUrl)return c.coverUrl;return window.COVERS.general;}
+function fileUrl(id,preview){return `/dl/files/${id}?lang=${lang}${preview?'&preview=1':''}`;}
+function coverSrc(c){if(c.cover&&window.COVERS[c.cover])return window.COVERS[c.cover];if(c.cover==='custom')return `/dl/covers/${c.id}`;return window.COVERS.general;}
 const getColl=id=>state.collections.find(c=>c.id===id);
 const getFile=id=>{for(const c of state.collections){const f=c.files.find(x=>x.id===id);if(f)return{file:f,coll:c};}return null;}
 const totalDocs=()=>state.collections.reduce((n,c)=>n+c.files.length,0);
