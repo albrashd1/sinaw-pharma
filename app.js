@@ -480,8 +480,38 @@ function openPreview(fileId){
   document.getElementById('closeModal').onclick=closeModal;
 }
 function closeModal(){document.getElementById('scrim').classList.remove('on')}
-function doDownload(fileId){
-  const a=document.createElement('a');a.href=fileUrl(fileId,false);a.target='_blank';a.rel='noopener';
+async function doDownload(fileId){
+  const found=getFile(fileId);
+  const fname=found?fileName(found.file):'document';
+  const url=fileUrl(fileId,false);
+
+  // iOS / modern mobile: use Web Share API so the user gets
+  // "Save to Files", "Save to Photos", AirDrop, etc.
+  if(typeof navigator.canShare==='function'){
+    toast(lang==='ar'?'جارٍ التحضير…':'Preparing file…',false);
+    try{
+      const res=await fetch(url);
+      if(!res.ok)throw new Error('fetch failed');
+      const blob=await res.blob();
+      // extract filename from Content-Disposition if available
+      const cd=res.headers.get('content-disposition')||'';
+      const cdName=(/filename[^;=\n]*=\s*['"]?([^'"\n;]+)/i.exec(cd)||[])[1]?.trim();
+      const ext=cdName?.split('.').pop()||blob.type.split('/')[1]||'bin';
+      const shareFile=new File([blob],cdName||`${fname}.${ext}`,{type:blob.type});
+      if(navigator.canShare({files:[shareFile]})){
+        await navigator.share({files:[shareFile],title:fname});
+        setTimeout(async()=>{await loadState();render();},800);
+        return;
+      }
+    }catch(e){
+      if(e.name==='AbortError')return; // user dismissed share sheet — that's fine
+      // any other error: fall through to standard link
+    }
+  }
+
+  // Desktop / Android fallback: standard <a download> link
+  const a=document.createElement('a');
+  a.href=url;a.download=fname;a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(async()=>{await loadState();render();},1200);
 }
