@@ -1,5 +1,5 @@
 /* Sinaw Pharma Book — service worker (app-shell cache; never caches the API) */
-const CACHE = 'sinaw-shell-v1';
+const CACHE = 'sinaw-shell-v2';
 const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/assets.js',
   '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
