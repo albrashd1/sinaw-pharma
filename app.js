@@ -90,7 +90,7 @@ const T={
     signIn:'تسجيل الدخول',password:'كلمة المرور',signOut:'تسجيل الخروج',
     panelChannel:'قناة الواتساب',channelUrl:'رابط القناة',saveChannel:'حفظ',saved:'تم الحفظ.',
     panelAddColl:'إضافة مجلد جديد',
-    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عماني 🇴🇲',
+    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عربي 🇴🇲',
     descEn:'الوصف — إنجليزي 🇬🇧',descAr:'الوصف — عربي 🇴🇲',
     phNameEn:'e.g. Mother & Baby Care',phNameAr:'مثال: رعاية الأم والطفل',
     phDescEn:'Short description in English',phDescAr:'وصف مختصر بالعربي',
