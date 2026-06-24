@@ -1,7 +1,7 @@
-/* Sinaw Pharma Book — frontend app v2 (bilingual, talks to the Cloudflare Worker API) */
+/* Sinaw Pharma Book — frontend app v3 */
 
 const API = (document.querySelector('meta[name="sinaw-api"]')?.content
-            || 'https://YOUR-WORKER-SUBDOMAIN.workers.dev').replace(/\/+$/,'');
+            || 'https://YOUR-WORKER.workers.dev').replace(/\/+$/,'');
 
 const COVER_ORDER=['warfarin','bp','skincare','firstaid','sprays','motherbaby','general'];
 const COVER_LABELS={
@@ -10,6 +10,7 @@ const COVER_LABELS={
 };
 const ACCEPT='.pdf,.png,.jpg,.jpeg,.webp,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv';
 
+/* ====== translations ====== */
 const T={
   en:{
     lib:'Library',admin:'Admin',
@@ -30,28 +31,36 @@ const T={
     signIn:'Sign in',password:'Password',signOut:'Sign out',
     panelChannel:'WhatsApp Channel',channelUrl:'Channel URL',saveChannel:'Save',saved:'Saved.',
     panelAddColl:'Add a New Folder',
-    nameEn:'Folder name — English 🇬🇧',nameAr:'اسم المجلد — عربي 🇸🇦',
-    descEn:'Description — English 🇬🇧',descAr:'الوصف — عربي 🇸🇦',
+    nameEn:'Folder name — English 🇬🇧',nameAr:'اسم المجلد — Oman 🇴🇲',
+    descEn:'Description — English 🇬🇧',descAr:'الوصف — Oman 🇴🇲',
     phNameEn:'e.g. Mother & Baby Care',phNameAr:'مثال: رعاية الأم والطفل',
     phDescEn:'Short description in English',phDescAr:'وصف مختصر بالعربي',
     folderCover:'Folder cover',uploadShort:'Upload',
     addFolder:'Add folder',
     panelFoldersDocs:'Folders & Documents',
     uploadDoc:'+ Upload a document',
-    sectionEn:'🇬🇧 English version',sectionAr:'🇸🇦 النسخة العربية',
-    titleEn:'Title — English 🇬🇧',titleAr:'العنوان — عربي 🇸🇦',
+    sectionEn:'🇬🇧 English version',sectionAr:'🇴🇲 Arabic version',
+    titleEn:'Title — English 🇬🇧',titleAr:'العنوان — عربي 🇴🇲',
     phTitleEn:'Document title in English',phTitleAr:'عنوان المستند بالعربي',
-    fileEn:'File — English 🇬🇧',fileAr:'ملف — عربي 🇸🇦',
+    fileEn:'File — English 🇬🇧',fileAr:'ملف — عربي 🇴🇲',
     chooseFile:'Choose file',noFileChosen:'No file chosen',
     uploadBtn:'Upload',uploading:'Uploading…',
     atLeastOne:'At least one file is required. If you only have one language, it will be used for both.',
     allowed:'Allowed: PDF, Images, Word, Excel, PowerPoint, TXT, CSV — max 20 MB each.',
-    removeFolder:'Remove folder',editCover:'Edit cover',
+    removeFolder:'Remove folder',
+    editCover:'Edit cover',
+    editDetails:'Edit title & description',
+    saveDetails:'Save',
+    detailsUpdated:'Folder updated.',
+    editFileTitle:'Edit title',
+    saveFileTitle:'Save title',
+    fileTitleUpdated:'Title updated.',
     statsTitle:'Download Stats',
     hDocument:'Document',hType:'Type',hDownloads:'Downloads',
     noFolders:'No folders yet.',noDocs:'No documents yet.',downloadsWord:'downloads',
     remove:'Remove',
-    confirmDelColl:'Remove this entire folder and all its documents?',confirmDelFile:'Remove this document?',
+    confirmDelColl:'Remove this entire folder and all its documents?',
+    confirmDelFile:'Remove this document?',
     alertFolderName:'Enter at least one folder name (English or Arabic).',
     alertNoFile:'Choose at least one file (English or Arabic).',
     security:'Security',currentPass:'Current password',newPass:'New password',confirmPass:'Confirm new password',
@@ -81,30 +90,38 @@ const T={
     signIn:'تسجيل الدخول',password:'كلمة المرور',signOut:'تسجيل الخروج',
     panelChannel:'قناة الواتساب',channelUrl:'رابط القناة',saveChannel:'حفظ',saved:'تم الحفظ.',
     panelAddColl:'إضافة مجلد جديد',
-    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عربي 🇸🇦',
-    descEn:'الوصف — إنجليزي 🇬🇧',descAr:'الوصف — عربي 🇸🇦',
+    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عماني 🇴🇲',
+    descEn:'الوصف — إنجليزي 🇬🇧',descAr:'الوصف — عربي 🇴🇲',
     phNameEn:'e.g. Mother & Baby Care',phNameAr:'مثال: رعاية الأم والطفل',
     phDescEn:'Short description in English',phDescAr:'وصف مختصر بالعربي',
     folderCover:'غلاف المجلد',uploadShort:'رفع',
     addFolder:'إضافة المجلد',
     panelFoldersDocs:'المجلدات والمستندات',
     uploadDoc:'+ رفع مستند',
-    sectionEn:'🇬🇧 النسخة الإنجليزية',sectionAr:'🇸🇦 النسخة العربية',
-    titleEn:'العنوان — إنجليزي 🇬🇧',titleAr:'العنوان — عربي 🇸🇦',
+    sectionEn:'🇬🇧 النسخة الإنجليزية',sectionAr:'🇴🇲 النسخة العربية',
+    titleEn:'العنوان — إنجليزي 🇬🇧',titleAr:'العنوان — عربي 🇴🇲',
     phTitleEn:'Document title in English',phTitleAr:'عنوان المستند بالعربي',
-    fileEn:'ملف — إنجليزي 🇬🇧',fileAr:'ملف — عربي 🇸🇦',
+    fileEn:'ملف — إنجليزي 🇬🇧',fileAr:'ملف — عربي 🇴🇲',
     chooseFile:'اختر ملفًا',noFileChosen:'لم يُختر ملف',
     uploadBtn:'رفع',uploading:'جارٍ الرفع…',
     atLeastOne:'مطلوب ملف واحد على الأقل. إذا أضفت نسخة واحدة فقط، ستُستخدم للغتين.',
-    allowed:'المسموح: PDF وصور وWord وExcel وPowerPoint وTXT وCSV — الحد الأقصى 20 ميغابايت لكل ملف.',
-    removeFolder:'حذف المجلد',editCover:'تغيير الغلاف',
+    allowed:'المسموح: PDF وصور وWord وExcel وPowerPoint وTXT وCSV — الحد الأقصى 20 ميغابايت.',
+    removeFolder:'حذف المجلد',
+    editCover:'تغيير الغلاف',
+    editDetails:'تعديل العنوان والوصف',
+    saveDetails:'حفظ',
+    detailsUpdated:'تم تحديث المجلد.',
+    editFileTitle:'تعديل العنوان',
+    saveFileTitle:'حفظ العنوان',
+    fileTitleUpdated:'تم تحديث العنوان.',
     statsTitle:'إحصائيات التنزيل',
     hDocument:'المستند',hType:'النوع',hDownloads:'التنزيلات',
     noFolders:'لا توجد مجلدات بعد.',noDocs:'لا توجد مستندات بعد.',downloadsWord:'تنزيل',
     remove:'حذف',
-    confirmDelColl:'حذف هذا المجلد وكل مستنداته؟',confirmDelFile:'حذف هذا المستند؟',
+    confirmDelColl:'حذف هذا المجلد وكل مستنداته؟',
+    confirmDelFile:'حذف هذا المستند؟',
     alertFolderName:'أدخل اسم المجلد بالعربي أو الإنجليزي.',
-    alertNoFile:'اختر ملفًا واحدًا على الأقل (إنجليزي أو عربي).',
+    alertNoFile:'اختر ملفًا واحدًا على الأقل.',
     security:'الأمان',currentPass:'كلمة المرور الحالية',newPass:'كلمة مرور جديدة',confirmPass:'تأكيد كلمة المرور',
     changePass:'تغيير كلمة المرور',passChanged:'تم تحديث كلمة المرور.',wrongPass:'كلمة المرور غير صحيحة.',
     mismatch:'كلمتا المرور غير متطابقتين.',
@@ -116,9 +133,10 @@ const T={
 };
 
 /* ====== state ====== */
-let state={channelUrl:'',collections:[]}, view={name:'library',collId:null}, query='', lang='en';
-let authToken=null, loadFailed=false, openEdit=null;
-let nfNameEn='', nfNameAr='', nfDescEn='', nfDescAr='', pendingCover='general';
+let state={channelUrl:'',collections:[]},view={name:'library',collId:null},query='',lang='en';
+let authToken=null,loadFailed=false;
+let openCoverEdit=null,openDetailsEdit=null,openFileTitle=null;
+let nfNameEn='',nfNameAr='',nfDescEn='',nfDescAr='',pendingCover='general';
 
 /* ====== helpers ====== */
 function t(k){return (T[lang]&&T[lang][k])||T.en[k]||k}
@@ -129,6 +147,7 @@ function fileName(x){return lang==='ar'?(x.name_ar||x.name_en):(x.name_en||x.nam
 function fileUrl(id,preview){return `${API}/files/${id}?lang=${lang}${preview?'&preview=1':''}`;}
 function coverSrc(c){if(c.cover&&window.COVERS[c.cover])return window.COVERS[c.cover];if(c.coverUrl)return c.coverUrl;return window.COVERS.general;}
 const getColl=id=>state.collections.find(c=>c.id===id);
+const getFile=id=>{for(const c of state.collections){const f=c.files.find(x=>x.id===id);if(f)return{file:f,coll:c};}return null;}
 const totalDocs=()=>state.collections.reduce((n,c)=>n+c.files.length,0);
 const totalDl=()=>state.collections.reduce((n,c)=>n+c.files.reduce((m,x)=>m+x.downloads,0),0);
 const collDl=c=>c.files.reduce((m,x)=>m+x.downloads,0);
@@ -139,8 +158,7 @@ function toast(msg,isErr){const el=document.getElementById('toast');el.textConte
 
 /* ====== API ====== */
 async function api(path,opts){
-  opts=opts||{};
-  const headers=opts.headers||{};
+  opts=opts||{};const headers=opts.headers||{};
   if(authToken)headers['Authorization']='Bearer '+authToken;
   const res=await fetch(API+path,{...opts,headers});
   let data=null;try{data=await res.json();}catch(e){}
@@ -177,7 +195,7 @@ function render(){
   void app.offsetWidth;
 }
 
-/* ====== library page ====== */
+/* ====== library ====== */
 function libraryHTML(){
   const q=query.trim().toLowerCase();
   let cols=state.collections;
@@ -198,9 +216,8 @@ function libraryHTML(){
         <span class="fname">${esc(collName(c))}</span>
         <span class="fqty">${c.files.length} ${t('documents')}</span>
       </button><span class="ledge"></span>
-    </div>`)
-    .join(''):`<div class="empty"><div class="e">📚</div><p>${q?t('emptySearchTitle'):t('emptyTitle')}</p><span class="s">${q?t('emptySearchHint'):t('emptyHint')}</span></div>`;
-
+    </div>`).join('')
+    :`<div class="empty"><div class="e">📚</div><p>${q?t('emptySearchTitle'):t('emptyTitle')}</p><span class="s">${q?t('emptySearchHint'):t('emptyHint')}</span></div>`;
   const kick=lang==='ar'?`<div class="kick">صيدلية سِناو · الجمعية الصيدلانية</div>`:`<div class="kick">Sinaw Pharmaceutical Society <span class="ar">·  صيدلية سِناو</span></div>`;
   const title=lang==='ar'?`<h1 class="head">المكتبة <em>الإلكترونية</em></h1>`:`<h1 class="head">The <em>Pharma</em><br>Library</h1>`;
   return `
@@ -227,19 +244,16 @@ function collectionHTML(c){
     else if(x.kind==='pdf')thumb=`<div class="thumb pdf"><div class="page"></div><span class="badge">PDF</span></div>`;
     else thumb=`<div class="thumb img-blank"><span class="ig">📄</span><span class="badge">DOC</span></div>`;
     const canPreview=x.kind==='image'||x.kind==='pdf';
-    // show language availability badges
-    const avail=`<span style="font-family:'DM Mono';font-size:9px;color:var(--ink-3)">${x.hasEn?'🇬🇧':''} ${x.hasAr?'🇸🇦':''}</span>`;
     return `<article class="doc">${thumb}
       <div class="meta">
         <h4>${esc(fileName(x))}</h4>
-        <div class="disp-n">${avail} &nbsp;<b>${x.downloads}</b> ${t('downloadsWord')}</div>
+        <div class="disp-n"><b>${x.downloads}</b> ${t('downloadsWord')}</div>
         <div class="acts">
           ${canPreview?`<button class="da" data-read="${x.id}">${t('preview')}</button>`:''}
           <button class="da solid" data-get="${x.id}">${t('download')}</button>
         </div>
       </div></article>`;
   }).join(''):`<p style="margin-top:24px;color:var(--ink-3)">${t('collEmpty')}</p>`;
-
   return `
   <section class="coll">
     <button class="back" data-lib>${arrow()} ${t('back')}</button>
@@ -270,7 +284,7 @@ function coverPicker(sel,target){
   return `<div class="coverpick">${tiles}<button type="button" class="cv-tile upload ${sel&&!window.COVERS[sel]?'on':''}" ${upDa} title="${t('uploadShort')}"><span><span class="pl">＋</span><br>${t('uploadShort')}</span></button></div>`;
 }
 
-/* ====== admin page ====== */
+/* ====== admin ====== */
 function loginHTML(extra){
   return `<section class="disp-page"><div class="gate">
     <div class="g"><img src="${window.LOGO}" alt="Sinaw Pharma Book"></div>
@@ -281,50 +295,59 @@ function loginHTML(extra){
   </div></section>`;
 }
 
-function fileRow(x){
-  const avail=`${x.hasEn?'🇬🇧 EN':''} ${x.hasAr?'🇸🇦 AR':''}`.trim();
-  return `<div class="cbfile">
-    <span class="fn"><span class="tag ${x.kind==='image'?'image':'pdf'}">${x.kind}</span>${esc(fileName(x))} <span style="font-size:11px;color:var(--ink-3)">${avail}</span></span>
-    <span class="mt">${x.downloads} ${t('downloadsWord')}</span>
-    <button class="del" data-delfile="${x.id}" style="flex:none">${t('remove')}</button>
+function biSection(color,labelKey,children){
+  return `<div style="border:1.5px solid ${color};border-radius:12px;padding:14px;margin-bottom:12px">
+    <div style="font-family:'DM Mono','Noto Kufi Arabic',sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:${color==='var(--herb-3)'?'var(--herb)':'var(--walnut)'};margin-bottom:12px">${t(labelKey)}</div>
+    ${children}
   </div>`;
 }
 
+function adminFileRow(x){
+  const avail=`${x.hasEn?'🇬🇧':''}${x.hasAr?'🇴🇲':''}`;
+  return `
+  <div class="cbfile">
+    <span class="fn">
+      <span class="tag ${x.kind==='image'?'image':'pdf'}">${x.kind}</span>
+      ${esc(fileName(x))}
+      <span style="font-size:11px;color:var(--ink-3);margin-inline-start:4px">${avail}</span>
+    </span>
+    <span style="display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap">
+      <span class="mt">${x.downloads} ${t('downloadsWord')}</span>
+      <button class="editbtn ${openFileTitle===x.id?'on':''}" data-edittitle="${x.id}">${t('editFileTitle')}</button>
+      <button class="del" data-delfile="${x.id}">${t('remove')}</button>
+    </span>
+  </div>
+  ${openFileTitle===x.id?`
+    <div class="inl">
+      <div class="row">
+        <div class="field"><label>${t('titleEn')}</label><input data-edit-name-en="${x.id}" value="${esc(x.name_en)}" placeholder="${t('phTitleEn')}" dir="ltr"></div>
+        <div class="field"><label>${t('titleAr')}</label><input data-edit-name-ar="${x.id}" value="${esc(x.name_ar)}" placeholder="${t('phTitleAr')}" dir="rtl"></div>
+      </div>
+      <button class="mini" data-savetitle="${x.id}">${t('saveFileTitle')}</button>
+      <span class="live" id="fmsg-${x.id}"></span>
+    </div>`:''}`;
+}
+
 function docUploadForm(cid){
-  const langDir=lang==='ar'?'rtl':'ltr';
   return `
   <div class="inl" id="dc-${cid}" style="display:none">
-    <!-- ENGLISH SECTION -->
-    <div style="border:1.5px solid var(--herb-3);border-radius:12px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'DM Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--herb);margin-bottom:12px">${t('sectionEn')}</div>
-      <div class="field">
-        <label>${t('titleEn')}</label>
-        <input data-dname-en="${cid}" placeholder="${t('phTitleEn')}" dir="ltr">
-      </div>
-      <div class="field">
-        <label>${t('fileEn')}</label>
+    ${biSection('var(--herb-3)','sectionEn',`
+      <div class="field"><label>${t('titleEn')}</label><input data-dname-en="${cid}" placeholder="${t('phTitleEn')}" dir="ltr"></div>
+      <div class="field"><label>${t('fileEn')}</label>
         <div class="upload-row">
           <label class="filebtn">${t('chooseFile')}<input type="file" data-dfile-en="${cid}" accept="${ACCEPT}" style="display:none"></label>
           <span class="filename" id="fn-en-${cid}">${t('noFileChosen')}</span>
         </div>
-      </div>
-    </div>
-    <!-- ARABIC SECTION -->
-    <div style="border:1.5px solid #f5e8d6;border-radius:12px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Noto Kufi Arabic','DM Mono',sans-serif;font-size:11px;letter-spacing:.04em;color:var(--walnut);margin-bottom:12px" dir="rtl">${t('sectionAr')}</div>
-      <div class="field">
-        <label>${t('titleAr')}</label>
-        <input data-dname-ar="${cid}" placeholder="${t('phTitleAr')}" dir="rtl">
-      </div>
-      <div class="field">
-        <label>${t('fileAr')}</label>
+      </div>`)}
+    ${biSection('#f5e8d6','sectionAr',`
+      <div class="field"><label>${t('titleAr')}</label><input data-dname-ar="${cid}" placeholder="${t('phTitleAr')}" dir="rtl"></div>
+      <div class="field"><label>${t('fileAr')}</label>
         <div class="upload-row">
           <label class="filebtn">${t('chooseFile')}<input type="file" data-dfile-ar="${cid}" accept="${ACCEPT}" style="display:none"></label>
           <span class="filename" id="fn-ar-${cid}">${t('noFileChosen')}</span>
         </div>
-      </div>
-    </div>
-    <div class="hint" style="margin-bottom:12px">${t('atLeastOne')}</div>
+      </div>`)}
+    <div class="hint" style="margin-bottom:10px">${t('atLeastOne')}</div>
     <div class="hint" style="margin-bottom:12px">${t('allowed')}</div>
     <button class="mini" data-savedoc="${cid}">${t('uploadBtn')}</button>
   </div>`;
@@ -338,14 +361,12 @@ function adminHTML(){
     statsRows+=`<tr class="grp"><td colspan="3">${esc(collName(c))} <span style="color:var(--ink-3)">· ${c.files.length} ${t('documents')} · ${collDl(c)} ${t('downloadsWord')}</span></td><td></td></tr>`;
     if(!c.files.length)statsRows+=`<tr><td colspan="4" class="indent" style="color:var(--ink-3)">—</td></tr>`;
     c.files.forEach(x=>{
-      const avail=`${x.hasEn?'🇬🇧':''}${x.hasAr?'🇸🇦':''}`;
+      const avail=`${x.hasEn?'🇬🇧':''}${x.hasAr?'🇴🇲':''}`;
       statsRows+=`<tr><td class="indent">${esc(fileName(x))} <span style="font-size:11px">${avail}</span></td><td><span class="tag ${x.kind==='image'?'image':'pdf'}">${x.kind}</span></td><td class="n">${x.downloads}</td><td class="end"><button class="del" data-delfile="${x.id}">${t('remove')}</button></td></tr>`;
     });
   });
 
-  const blocks=state.collections.map(c=>{
-    const isOpen=openEdit===c.id;
-    return `
+  const blocks=state.collections.map(c=>`
     <div class="cblock">
       <div class="cbh">
         <div class="nm">
@@ -353,18 +374,33 @@ function adminHTML(){
           <h4>${esc(collName(c))}<small>${c.files.length} ${t('documents')}</small></h4>
         </div>
         <div class="ctrls">
-          <button class="editbtn ${isOpen?'on':''}" data-editappear="${c.id}">${t('editCover')}</button>
+          <button class="editbtn ${openDetailsEdit===c.id?'on':''}" data-editdetails="${c.id}">${t('editDetails')}</button>
+          <button class="editbtn ${openCoverEdit===c.id?'on':''}" data-editappear="${c.id}">${t('editCover')}</button>
           <button class="del" data-delcoll="${c.id}">${t('removeFolder')}</button>
         </div>
       </div>
       <div class="cbf">
-        ${isOpen?`<div class="inl"><div class="field" style="margin-bottom:0"><label>${t('folderCover')}</label>${coverPicker(c.cover,c.id)}</div></div>`:''}
-        ${c.files.length?c.files.map(fileRow).join(''):`<div class="mt" style="padding:6px 0">${t('noDocs')}</div>`}
+        ${openDetailsEdit===c.id?`
+        <div class="inl">
+          ${biSection('var(--herb-3)','sectionEn',`
+            <div class="row">
+              <div class="field"><label>${t('nameEn')}</label><input data-det-name-en="${c.id}" value="${esc(c.name_en)}" placeholder="${t('phNameEn')}" dir="ltr"></div>
+              <div class="field"><label>${t('descEn')}</label><input data-det-desc-en="${c.id}" value="${esc(c.desc_en)}" placeholder="${t('phDescEn')}" dir="ltr"></div>
+            </div>`)}
+          ${biSection('#f5e8d6','sectionAr',`
+            <div class="row">
+              <div class="field"><label>${t('nameAr')}</label><input data-det-name-ar="${c.id}" value="${esc(c.name_ar)}" placeholder="${t('phNameAr')}" dir="rtl"></div>
+              <div class="field"><label>${t('descAr')}</label><input data-det-desc-ar="${c.id}" value="${esc(c.desc_ar)}" placeholder="${t('phDescAr')}" dir="rtl"></div>
+            </div>`)}
+          <button class="mini" data-savedetails="${c.id}">${t('saveDetails')}</button>
+          <span class="live" id="dmsg-${c.id}"></span>
+        </div>`:''}
+        ${openCoverEdit===c.id?`<div class="inl"><div class="field" style="margin-bottom:0"><label>${t('folderCover')}</label>${coverPicker(c.cover,c.id)}</div></div>`:''}
+        ${c.files.length?c.files.map(adminFileRow).join(''):`<div class="mt" style="padding:6px 0">${t('noDocs')}</div>`}
         <button class="adddoc" data-adddoc="${c.id}">${t('uploadDoc')}</button>
         ${docUploadForm(c.id)}
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 
   return `<section class="disp-page">
     <div class="reg-top">
@@ -373,7 +409,6 @@ function adminHTML(){
       <button id="lock" class="lk">${t('signOut')}</button>
     </div>
 
-    <!-- WhatsApp channel -->
     <div class="panel"><div class="pt">${t('panelChannel')}</div>
       <div class="field"><label>${t('channelUrl')}</label>
         <input id="chUrl" placeholder="https://whatsapp.com/channel/…" value="${esc(state.channelUrl||'')}">
@@ -382,34 +417,25 @@ function adminHTML(){
       <span class="live" id="chMsg"></span>
     </div>
 
-    <!-- Add new folder (bilingual) -->
     <div class="panel"><div class="pt">${t('panelAddColl')}</div>
-      <!-- English section -->
-      <div style="border:1.5px solid var(--herb-3);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-family:'DM Mono';font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--herb);margin-bottom:12px">${t('sectionEn')}</div>
+      ${biSection('var(--herb-3)','sectionEn',`
         <div class="row">
           <div class="field"><label>${t('nameEn')}</label><input id="nfNameEn" value="${esc(nfNameEn)}" placeholder="${t('phNameEn')}" dir="ltr"></div>
           <div class="field"><label>${t('descEn')}</label><input id="nfDescEn" value="${esc(nfDescEn)}" placeholder="${t('phDescEn')}" dir="ltr"></div>
-        </div>
-      </div>
-      <!-- Arabic section -->
-      <div style="border:1.5px solid #f5e8d6;border-radius:12px;padding:14px;margin-bottom:14px">
-        <div style="font-family:'Noto Kufi Arabic','DM Mono',sans-serif;font-size:11px;letter-spacing:.04em;color:var(--walnut);margin-bottom:12px" dir="rtl">${t('sectionAr')}</div>
+        </div>`)}
+      ${biSection('#f5e8d6','sectionAr',`
         <div class="row">
           <div class="field"><label>${t('nameAr')}</label><input id="nfNameAr" value="${esc(nfNameAr)}" placeholder="${t('phNameAr')}" dir="rtl"></div>
           <div class="field"><label>${t('descAr')}</label><input id="nfDescAr" value="${esc(nfDescAr)}" placeholder="${t('phDescAr')}" dir="rtl"></div>
-        </div>
-      </div>
+        </div>`)}
       <div class="field"><label>${t('folderCover')}</label>${coverPicker(pendingCover,'new')}</div>
       <button class="mini" id="addColl">${t('addFolder')}</button>
     </div>
 
-    <!-- Existing folders -->
     <div class="panel"><div class="pt">${t('panelFoldersDocs')}</div>
       ${blocks||`<div class="mt" style="color:var(--ink-3)">${t('noFolders')}</div>`}
     </div>
 
-    <!-- Download stats -->
     <div class="panel"><div class="pt">${t('statsTitle')}</div>
       <div class="readout" style="max-width:none;margin-bottom:22px">
         <div class="cell"><div class="n">${state.collections.length}</div><div class="l">${t('collectionsL')}</div></div>
@@ -422,7 +448,6 @@ function adminHTML(){
       </table></div>
     </div>
 
-    <!-- Security / change password -->
     <div class="panel"><div class="pt">${t('security')}</div>
       <div class="row">
         <div class="field"><label>${t('currentPass')}</label><input id="curPass" type="password" maxlength="80" style="letter-spacing:.12em"></div>
@@ -438,20 +463,17 @@ function adminHTML(){
 
 /* ====== preview / download ====== */
 function openPreview(fileId){
-  let x=null,c=null;
-  for(const col of state.collections){const f=col.files.find(i=>i.id===fileId);if(f){x=f;c=col;break;}}
-  if(!x)return;
-  const canPreview=x.kind==='image'||x.kind==='pdf';
+  const found=getFile(fileId);if(!found)return;
+  const {file:x,coll:c}=found;
   let body;
   if(x.kind==='image')body=`<img class="pv-img" src="${fileUrl(x.id,true)}" alt="${esc(fileName(x))}">`;
   else if(x.kind==='pdf')body=`<iframe class="pv-frame" src="${fileUrl(x.id,true)}" title="${esc(fileName(x))}"></iframe>`;
   else body=`<div class="pv-blank"><div><div class="i">📄</div><p style="margin-top:12px;color:var(--ink-2)">${t('noPreview')}</p></div></div>`;
-  const avail=`${x.hasEn?'🇬🇧 EN':''} ${x.hasAr?'🇸🇦 AR':''}`.trim();
   document.getElementById('modal').innerHTML=`
     <div class="mh"><h3>${esc(fileName(x))}</h3><button class="x" id="closeModal" aria-label="Close">×</button></div>
     <div class="mb">${body}</div>
     <div class="mf">
-      <span class="st">${esc(collName(c))} · ${avail} · ${x.downloads} ${t('downloadsWord')}</span>
+      <span class="st">${esc(collName(c))} · ${x.downloads} ${t('downloadsWord')}</span>
       <button class="get" data-get="${x.id}">↓ ${t('downloadBtn')}</button>
     </div>`;
   document.getElementById('scrim').classList.add('on');
@@ -481,34 +503,28 @@ async function doLogin(){
   }
 }
 
-/* ====== navigation ====== */
+/* ====== nav ====== */
 function goLib(){view={name:'library',collId:null};render();window.scrollTo({top:0})}
 document.getElementById('brandBtn').onclick=goLib;
 document.getElementById('navLib').onclick=goLib;
 document.getElementById('navDisp').onclick=()=>{view={name:'admin'};render();window.scrollTo({top:0})};
-document.getElementById('navLang').onclick=()=>{
-  lang=lang==='en'?'ar':'en';
-  try{localStorage.setItem('sinaw_lang',lang)}catch(e){}
-  applyLang();render();
-};
+document.getElementById('navLang').onclick=()=>{lang=lang==='en'?'ar':'en';try{localStorage.setItem('sinaw_lang',lang)}catch(e){}applyLang();render();};
 document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 
-/* ====== click events ====== */
-document.getElementById('app').addEventListener('click',async e=>{
+/* ====== click handler — on document so modal download works ====== */
+document.addEventListener('click',async e=>{
   /* retry */
   if(e.target.id==='retryBtn'){await loadState();render();return;}
   /* login */
   if(e.target.id==='doLogin'){doLogin();return;}
   /* sign out */
-  if(e.target.id==='lock'){authToken=null;openEdit=null;goLib();return;}
-  /* save channel */
+  if(e.target.id==='lock'){authToken=null;openCoverEdit=null;openDetailsEdit=null;openFileTitle=null;goLib();return;}
+  /* channel */
   if(e.target.id==='saveCh'){
     try{
-      await api('/api/admin/settings',{method:'PUT',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({channelUrl:(document.getElementById('chUrl').value||'').trim()})});
-      await loadState();
-      const m=document.getElementById('chMsg');if(m)m.textContent=t('saved');
+      await api('/api/admin/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({channelUrl:(document.getElementById('chUrl').value||'').trim()})});
+      await loadState();const m=document.getElementById('chMsg');if(m)m.textContent=t('saved');
     }catch(er){toast(er.message,true);}
     return;
   }
@@ -525,29 +541,26 @@ document.getElementById('app').addEventListener('click',async e=>{
   }
   /* change password */
   if(e.target.id==='changePassBtn'){
-    const cur=document.getElementById('curPass').value,
-          a=document.getElementById('newPass1').value,
-          b=document.getElementById('newPass2').value;
+    const cur=document.getElementById('curPass').value,a=document.getElementById('newPass1').value,b=document.getElementById('newPass2').value;
     const sm=document.getElementById('secMsg');sm.style.color='#b4452f';
     if(a!==b){sm.textContent=t('mismatch');return;}
     try{
-      await api('/api/admin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({current:cur,next:a})});
+      await api('/api/admin/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({current:cur,next:a})});
       sm.style.color='var(--herb)';sm.textContent=t('passChanged');
-      document.getElementById('curPass').value='';
-      document.getElementById('newPass1').value='';
-      document.getElementById('newPass2').value='';
+      document.getElementById('curPass').value='';document.getElementById('newPass1').value='';document.getElementById('newPass2').value='';
     }catch(er){sm.textContent=er.message;}
     return;
   }
 
-  /* delegated */
-  const tg=e.target.closest('[data-open],[data-lib],[data-read],[data-get],[data-pickcover],[data-setcover],[data-uploadcover],[data-editappear],[data-adddoc],[data-savedoc],[data-delfile],[data-delcoll]');
+  /* delegated — works for both #app and #modal because listener is on document */
+  const tg=e.target.closest('[data-open],[data-lib],[data-read],[data-get],[data-pickcover],[data-setcover],[data-uploadcover],[data-editappear],[data-editdetails],[data-savedetails],[data-edittitle],[data-savetitle],[data-adddoc],[data-savedoc],[data-delfile],[data-delcoll]');
   if(!tg)return;
+
   if(tg.dataset.lib!==undefined){goLib();return;}
   if(tg.dataset.open){view={name:'collection',collId:tg.dataset.open};render();window.scrollTo({top:0});return;}
   if(tg.dataset.read){openPreview(tg.dataset.read);return;}
   if(tg.dataset.get){doDownload(tg.dataset.get);return;}
+
   if(tg.dataset.pickcover){pendingCover=tg.dataset.pickcover;render();return;}
   if(tg.dataset.setcover){
     const i=tg.dataset.setcover.indexOf(':'),cid=tg.dataset.setcover.slice(0,i),k=tg.dataset.setcover.slice(i+1);
@@ -565,48 +578,82 @@ document.getElementById('app').addEventListener('click',async e=>{
     });
     return;
   }
-  if(tg.dataset.editappear){openEdit=openEdit===tg.dataset.editappear?null:tg.dataset.editappear;render();return;}
-  if(tg.dataset.adddoc){
-    const f=document.getElementById('dc-'+tg.dataset.adddoc);
-    f.style.display=f.style.display==='none'?'block':'none';
+
+  /* toggle cover editor */
+  if(tg.dataset.editappear){
+    openCoverEdit=openCoverEdit===tg.dataset.editappear?null:tg.dataset.editappear;
+    openDetailsEdit=null;render();return;
+  }
+  /* toggle details editor */
+  if(tg.dataset.editdetails){
+    openDetailsEdit=openDetailsEdit===tg.dataset.editdetails?null:tg.dataset.editdetails;
+    openCoverEdit=null;render();return;
+  }
+  /* save folder details */
+  if(tg.dataset.savedetails){
+    const cid=tg.dataset.savedetails;
+    const body={
+      name_en:(document.querySelector(`[data-det-name-en="${cid}"]`)?.value||'').trim(),
+      name_ar:(document.querySelector(`[data-det-name-ar="${cid}"]`)?.value||'').trim(),
+      desc_en:(document.querySelector(`[data-det-desc-en="${cid}"]`)?.value||'').trim(),
+      desc_ar:(document.querySelector(`[data-det-desc-ar="${cid}"]`)?.value||'').trim(),
+    };
+    if(!body.name_en&&!body.name_ar){toast(t('alertFolderName'),true);return;}
+    try{
+      await api('/api/admin/collections/'+cid,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      await loadState();
+      const m=document.getElementById('dmsg-'+cid);if(m){m.textContent=t('detailsUpdated');}
+      render();
+    }catch(er){toast(er.message,true);}
     return;
   }
+  /* toggle file title editor */
+  if(tg.dataset.edittitle){
+    openFileTitle=openFileTitle===tg.dataset.edittitle?null:tg.dataset.edittitle;render();return;
+  }
+  /* save file title */
+  if(tg.dataset.savetitle){
+    const fid=tg.dataset.savetitle;
+    const body={
+      name_en:(document.querySelector(`[data-edit-name-en="${fid}"]`)?.value||'').trim(),
+      name_ar:(document.querySelector(`[data-edit-name-ar="${fid}"]`)?.value||'').trim(),
+    };
+    try{
+      await api('/api/admin/files/'+fid,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      await loadState();
+      const m=document.getElementById('fmsg-'+fid);if(m)m.textContent=t('fileTitleUpdated');
+      render();
+    }catch(er){toast(er.message,true);}
+    return;
+  }
+
+  if(tg.dataset.adddoc){const f=document.getElementById('dc-'+tg.dataset.adddoc);f.style.display=f.style.display==='none'?'block':'none';return;}
+
+  /* upload document */
   if(tg.dataset.savedoc){
     const cid=tg.dataset.savedoc;
     const inpEn=document.querySelector(`[data-dfile-en="${cid}"]`);
     const inpAr=document.querySelector(`[data-dfile-ar="${cid}"]`);
-    const fileEn=inpEn&&inpEn.files&&inpEn.files[0];
-    const fileAr=inpAr&&inpAr.files&&inpAr.files[0];
+    const fileEn=inpEn?.files?.[0],fileAr=inpAr?.files?.[0];
     if(!fileEn&&!fileAr){toast(t('alertNoFile'),true);return;}
-    const nameEn=(document.querySelector(`[data-dname-en="${cid}"]`).value||'').trim();
-    const nameAr=(document.querySelector(`[data-dname-ar="${cid}"]`).value||'').trim();
+    const nameEn=(document.querySelector(`[data-dname-en="${cid}"]`)?.value||'').trim();
+    const nameAr=(document.querySelector(`[data-dname-ar="${cid}"]`)?.value||'').trim();
     const fd=new FormData();
     if(fileEn)fd.append('file_en',fileEn);
     if(fileAr)fd.append('file_ar',fileAr);
     if(nameEn)fd.append('name_en',nameEn);
     if(nameAr)fd.append('name_ar',nameAr);
     tg.textContent=t('uploading');tg.classList.add('busy');
-    try{
-      await api('/api/admin/collections/'+cid+'/files',{method:'POST',body:fd});
-      await loadState();render();
-    }catch(er){toast(er.message,true);tg.classList.remove('busy');tg.textContent=t('uploadBtn');}
+    try{await api('/api/admin/collections/'+cid+'/files',{method:'POST',body:fd});await loadState();render();}
+    catch(er){toast(er.message,true);tg.classList.remove('busy');tg.textContent=t('uploadBtn');}
     return;
   }
-  if(tg.dataset.delfile){
-    if(!confirm(t('confirmDelFile')))return;
-    try{await api('/api/admin/files/'+tg.dataset.delfile,{method:'DELETE'});await loadState();render();}
-    catch(er){toast(er.message,true);}
-    return;
-  }
-  if(tg.dataset.delcoll){
-    if(!confirm(t('confirmDelColl')))return;
-    try{await api('/api/admin/collections/'+tg.dataset.delcoll,{method:'DELETE'});await loadState();render();}
-    catch(er){toast(er.message,true);}
-    return;
-  }
+
+  if(tg.dataset.delfile){if(!confirm(t('confirmDelFile')))return;try{await api('/api/admin/files/'+tg.dataset.delfile,{method:'DELETE'});await loadState();render();}catch(er){toast(er.message,true);}return;}
+  if(tg.dataset.delcoll){if(!confirm(t('confirmDelColl')))return;try{await api('/api/admin/collections/'+tg.dataset.delcoll,{method:'DELETE'});await loadState();render();}catch(er){toast(er.message,true);}return;}
 });
 
-/* ====== input events ====== */
+/* ====== input ====== */
 document.getElementById('app').addEventListener('input',e=>{
   if(e.target.id==='search'){query=e.target.value;const p=e.target.selectionStart;render();const s=document.getElementById('search');if(s){s.focus();try{s.setSelectionRange(p,p)}catch(_){}}return;}
   if(e.target.id==='nfNameEn'){nfNameEn=e.target.value;return;}
@@ -614,23 +661,19 @@ document.getElementById('app').addEventListener('input',e=>{
   if(e.target.id==='nfDescEn'){nfDescEn=e.target.value;return;}
   if(e.target.id==='nfDescAr'){nfDescAr=e.target.value;return;}
 });
-document.getElementById('app').addEventListener('change',e=>{
-  if(e.target.dataset.dfileEn){
-    const sp=document.getElementById('fn-en-'+e.target.dataset.dfileEn);
-    if(sp)sp.textContent=(e.target.files[0]?.name)||t('noFileChosen');
-  }
-  if(e.target.dataset.dfileAr){
-    const sp=document.getElementById('fn-ar-'+e.target.dataset.dfileAr);
-    if(sp)sp.textContent=(e.target.files[0]?.name)||t('noFileChosen');
-  }
+/* ====== file chosen labels ====== */
+document.addEventListener('change',e=>{
+  if(e.target.dataset.dfileEn){const sp=document.getElementById('fn-en-'+e.target.dataset.dfileEn);if(sp)sp.textContent=e.target.files[0]?.name||t('noFileChosen');}
+  if(e.target.dataset.dfileAr){const sp=document.getElementById('fn-ar-'+e.target.dataset.dfileAr);if(sp)sp.textContent=e.target.files[0]?.name||t('noFileChosen');}
 });
-document.getElementById('app').addEventListener('keydown',e=>{
+/* ====== keyboard ====== */
+document.addEventListener('keydown',e=>{
   const f=e.target.closest('.folder');
   if(f&&(e.key==='Enter'||e.key===' ')){e.preventDefault();view={name:'collection',collId:f.dataset.open};render();window.scrollTo({top:0});}
   if(e.target.id==='pw'&&e.key==='Enter')doLogin();
 });
 
-function pickImage(cb){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>{const f=i.files&&i.files[0];if(f)cb(f);};i.click();}
+function pickImage(cb){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>{const f=i.files?.[0];if(f)cb(f);};i.click();}
 
 /* ====== PWA ====== */
 let deferredPrompt=null;
