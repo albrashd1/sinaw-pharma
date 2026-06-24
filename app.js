@@ -482,14 +482,12 @@ function openPreview(fileId){
 function closeModal(){document.getElementById('scrim').classList.remove('on')}
 async function doDownload(fileId){
   const found=getFile(fileId);
-  const fname=found?fileName(found.file):'document';
+  const fname=(found?fileName(found.file):'document').replace(/[/\\:*?"<>|]+/g,'_').trim()||'document';
   const url=fileUrl(fileId,false);
 
-  // MIME → file extension map (so the saved file always has the right extension)
   const MIME_EXT={
     'application/pdf':'pdf',
-    'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png',
-    'image/webp':'webp','image/gif':'gif',
+    'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif',
     'application/msword':'doc',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
     'application/vnd.ms-excel':'xls',
@@ -499,34 +497,42 @@ async function doDownload(fileId){
     'text/plain':'txt','text/csv':'csv',
   };
 
-  // iOS / modern mobile: Web Share API → shows "Save to Files", AirDrop, WhatsApp, etc.
-  if(typeof navigator.canShare==='function'){
-    toast(lang==='ar'?'جارٍ التحضير…':'Preparing file…',false);
-    try{
-      const res=await fetch(url);
-      if(!res.ok)throw new Error('fetch failed');
-      const blob=await res.blob();
-      // Always get MIME from Content-Type header — most reliable source
-      const mime=(res.headers.get('content-type')||blob.type||'application/octet-stream').split(';')[0].trim();
-      // Always use a proper extension so iOS knows how to open the file
-      const ext=MIME_EXT[mime]||mime.split('/')[1]||'bin';
-      const shareFile=new File([blob],`${fname}.${ext}`,{type:mime});
+  toast(lang==='ar'?'جارٍ التحضير…':'Preparing file…',false);
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const blob=await res.blob();
+
+    // Get MIME from the response (most reliable; blob.type works even when headers are stripped)
+    const mime=(res.headers.get('content-type')||blob.type||'application/octet-stream').split(';')[0].trim();
+    const ext=MIME_EXT[mime]||mime.split('/').pop()||'bin';
+    const filename=`${fname}.${ext}`;
+
+    // ── iOS / modern mobile: Web Share API ──────────────────────────
+    // Shows "Save to Files", "Save to Photos", AirDrop, WhatsApp, etc.
+    if(typeof navigator.canShare==='function'){
+      const shareFile=new File([blob],filename,{type:mime});
       if(navigator.canShare({files:[shareFile]})){
         await navigator.share({files:[shareFile],title:fname});
         setTimeout(async()=>{await loadState();render();},800);
         return;
       }
-    }catch(e){
-      if(e.name==='AbortError')return; // user dismissed share sheet
-      // other errors: fall through to link download
     }
-  }
 
-  // Desktop / Android fallback
-  const a=document.createElement('a');
-  a.href=url;a.download=fname;a.target='_blank';a.rel='noopener';
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(async()=>{await loadState();render();},1200);
+    // ── Desktop / Android: blob URL with correct filename & extension ─
+    // Using a blob: URL ensures the browser uses our filename, not the server's.
+    const blobUrl=URL.createObjectURL(new Blob([blob],{type:mime}));
+    const a=document.createElement('a');
+    a.href=blobUrl;
+    a.download=filename;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),30000);
+    setTimeout(async()=>{await loadState();render();},1200);
+
+  }catch(e){
+    if(e.name==='AbortError')return;
+    toast(lang==='ar'?'فشل التنزيل، حاول مرة أخرى':'Download failed, please try again',true);
+  }
 }
 
 /* ====== login ====== */
