@@ -485,31 +485,44 @@ async function doDownload(fileId){
   const fname=found?fileName(found.file):'document';
   const url=fileUrl(fileId,false);
 
-  // iOS / modern mobile: use Web Share API so the user gets
-  // "Save to Files", "Save to Photos", AirDrop, etc.
+  // MIME → file extension map (so the saved file always has the right extension)
+  const MIME_EXT={
+    'application/pdf':'pdf',
+    'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png',
+    'image/webp':'webp','image/gif':'gif',
+    'application/msword':'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx',
+    'application/vnd.ms-excel':'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xlsx',
+    'application/vnd.ms-powerpoint':'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation':'pptx',
+    'text/plain':'txt','text/csv':'csv',
+  };
+
+  // iOS / modern mobile: Web Share API → shows "Save to Files", AirDrop, WhatsApp, etc.
   if(typeof navigator.canShare==='function'){
     toast(lang==='ar'?'جارٍ التحضير…':'Preparing file…',false);
     try{
       const res=await fetch(url);
       if(!res.ok)throw new Error('fetch failed');
       const blob=await res.blob();
-      // extract filename from Content-Disposition if available
-      const cd=res.headers.get('content-disposition')||'';
-      const cdName=(/filename[^;=\n]*=\s*['"]?([^'"\n;]+)/i.exec(cd)||[])[1]?.trim();
-      const ext=cdName?.split('.').pop()||blob.type.split('/')[1]||'bin';
-      const shareFile=new File([blob],cdName||`${fname}.${ext}`,{type:blob.type});
+      // Always get MIME from Content-Type header — most reliable source
+      const mime=(res.headers.get('content-type')||blob.type||'application/octet-stream').split(';')[0].trim();
+      // Always use a proper extension so iOS knows how to open the file
+      const ext=MIME_EXT[mime]||mime.split('/')[1]||'bin';
+      const shareFile=new File([blob],`${fname}.${ext}`,{type:mime});
       if(navigator.canShare({files:[shareFile]})){
         await navigator.share({files:[shareFile],title:fname});
         setTimeout(async()=>{await loadState();render();},800);
         return;
       }
     }catch(e){
-      if(e.name==='AbortError')return; // user dismissed share sheet — that's fine
-      // any other error: fall through to standard link
+      if(e.name==='AbortError')return; // user dismissed share sheet
+      // other errors: fall through to link download
     }
   }
 
-  // Desktop / Android fallback: standard <a download> link
+  // Desktop / Android fallback
   const a=document.createElement('a');
   a.href=url;a.download=fname;a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();a.remove();
