@@ -218,7 +218,7 @@ function libraryHTML(){
       </button><span class="ledge"></span>
     </div>`).join('')
     :`<div class="empty"><div class="e">📚</div><p>${q?t('emptySearchTitle'):t('emptyTitle')}</p><span class="s">${q?t('emptySearchHint'):t('emptyHint')}</span></div>`;
-  const kick=lang==='ar'?`<div class="kick">صيدلية مستشفى سِناو</div>`:`<div class="kick">Sinaw Pharmaceutical Society <span class="ar">·  صيدلية مستشفى سِناو</span></div>`;
+  const kick=lang==='ar'?`<div class="kick">صيدلية مستشفى سِناو</div>`:`<div class="kick"><span class="ar">·  صيدلية مستشفى سِناو</span></div>`;
   const title=lang==='ar'?`<h1 class="head">المكتبة <em>الإلكترونية</em></h1>`:`<h1 class="head">The <em>Pharma</em><br>Library</h1>`;
   return `
   <section class="hero">${kick}${title}
