@@ -1,7 +1,7 @@
 /* Sinaw Pharma Book — frontend app v3 */
 
 const API = (document.querySelector('meta[name="sinaw-api"]')?.content
-            || 'https://sinaw-pharma-api.sinaw20003.workers.dev').replace(/\/+$/,'');
+            || 'https://YOUR-WORKER.workers.dev').replace(/\/+$/,'');
 
 const COVER_ORDER=['warfarin','bp','skincare','firstaid','sprays','motherbaby','general'];
 const COVER_LABELS={
@@ -70,6 +70,29 @@ const T={
     loadErr:'Could not reach the library. Check your connection.',retry:'Retry',
     secNote:'Admin actions and uploads are verified server-side. Your password is hashed (PBKDF2) — never stored in plain text.',
     footer:'Sinaw Pharma Book · A modern library of clinical imaging & documents',
+    sugTitle:'Share a Suggestion',
+    sugDesc:'Have a topic you\'d like us to add to the library? We\'d love to hear from you. We\'ll send a confirmation to your email and reply as soon as we can.',
+    sugName:'Your name (optional)',
+    sugEmail:'Your email address *',
+    sugMessage:'Your suggestion *',
+    sugSend:'Send suggestion',
+    sugSending:'Sending…',
+    sugOk:'Thank you! We\'ve received your suggestion and sent a confirmation to your email.',
+    sugErrEmail:'Please enter a valid email address.',
+    sugErrMsg:'Please write your suggestion.',
+    sugErrFail:'Something went wrong. Please try again.',
+    sugPlName:'e.g. Haitham',
+    sugPlEmail:'your@email.com',
+    sugPlMsg:'e.g. I\'d love to see a section on paediatric dosing guidelines…',
+    adminSugTitle:'Suggestions Inbox',
+    adminSugEmpty:'No suggestions yet.',
+    adminSugNew:'New',
+    adminSugReplied:'Replied',
+    adminSugFrom:'From',
+    adminSugReplyLabel:'Your reply',
+    adminSugReplyBtn:'Send reply',
+    adminSugReplySent:'Reply sent.',
+    adminSugDelete:'Delete',
   },
   ar:{
     lib:'المكتبة',admin:'الإدارة',
@@ -90,7 +113,7 @@ const T={
     signIn:'تسجيل الدخول',password:'كلمة المرور',signOut:'تسجيل الخروج',
     panelChannel:'قناة الواتساب',channelUrl:'رابط القناة',saveChannel:'حفظ',saved:'تم الحفظ.',
     panelAddColl:'إضافة مجلد جديد',
-    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عربي 🇴🇲',
+    nameEn:'اسم المجلد — إنجليزي 🇬🇧',nameAr:'اسم المجلد — عماني 🇴🇲',
     descEn:'الوصف — إنجليزي 🇬🇧',descAr:'الوصف — عربي 🇴🇲',
     phNameEn:'e.g. Mother & Baby Care',phNameAr:'مثال: رعاية الأم والطفل',
     phDescEn:'Short description in English',phDescAr:'وصف مختصر بالعربي',
@@ -129,6 +152,29 @@ const T={
     loadErr:'تعذّر الوصول. تحقّق من الاتصال.',retry:'إعادة المحاولة',
     secNote:'تُتحقق إجراءات الإدارة والرفع عبر الخادم. كلمة المرور مُجزّأة (PBKDF2) ولا تُخزَّن كنص عادي.',
     footer:'صيدلية سِناو · مكتبة إلكترونية حديثة للصور والمستندات الطبية',
+    sugTitle:'شاركنا اقتراحك',
+    sugDesc:'هل لديك موضوع تودّ أن نضيفه إلى المكتبة؟ يسعدنا سماع رأيك. سنرسل تأكيدًا إلى بريدك الإلكتروني وسنرد عليك في أقرب وقت.',
+    sugName:'اسمك (اختياري)',
+    sugEmail:'بريدك الإلكتروني *',
+    sugMessage:'اقتراحك *',
+    sugSend:'إرسال الاقتراح',
+    sugSending:'جارٍ الإرسال…',
+    sugOk:'شكرًا! استلمنا اقتراحك وأرسلنا تأكيدًا إلى بريدك الإلكتروني.',
+    sugErrEmail:'يرجى إدخال بريد إلكتروني صحيح.',
+    sugErrMsg:'يرجى كتابة اقتراحك.',
+    sugErrFail:'حدث خطأ. يرجى المحاولة مرة أخرى.',
+    sugPlName:'مثال: هيثم',
+    sugPlEmail:'your@email.com',
+    sugPlMsg:'مثال: أودّ رؤية قسم عن جرعات الأدوية للأطفال…',
+    adminSugTitle:'صندوق الاقتراحات',
+    adminSugEmpty:'لا توجد اقتراحات بعد.',
+    adminSugNew:'جديد',
+    adminSugReplied:'تم الرد',
+    adminSugFrom:'من',
+    adminSugReplyLabel:'ردّك',
+    adminSugReplyBtn:'إرسال الرد',
+    adminSugReplySent:'تم إرسال الرد.',
+    adminSugDelete:'حذف',
   }
 };
 
@@ -137,6 +183,8 @@ let state={channelUrl:'',collections:[]},view={name:'library',collId:null},query
 let authToken=null,loadFailed=false;
 let openCoverEdit=null,openDetailsEdit=null,openFileTitle=null;
 let nfNameEn='',nfNameAr='',nfDescEn='',nfDescAr='',pendingCover='general';
+let sugName='',sugEmail='',sugMsg='',sugStatus='';
+let suggestions=[];
 
 /* ====== helpers ====== */
 function t(k){return (T[lang]&&T[lang][k])||T.en[k]||k}
@@ -218,7 +266,7 @@ function libraryHTML(){
       </button><span class="ledge"></span>
     </div>`).join('')
     :`<div class="empty"><div class="e">📚</div><p>${q?t('emptySearchTitle'):t('emptyTitle')}</p><span class="s">${q?t('emptySearchHint'):t('emptyHint')}</span></div>`;
-  const kick=lang==='ar'?`<div class="kick">صيدلية مستشفى سِناو</div>`:`<div class="kick"><span class="ar">صيدلية مستشفى سِناو</span></div>`;
+  const kick=lang==='ar'?`<div class="kick">صيدلية سِناو · الجمعية الصيدلانية</div>`:`<div class="kick">Sinaw Pharmaceutical Society <span class="ar">·  صيدلية سِناو</span></div>`;
   const title=lang==='ar'?`<h1 class="head">المكتبة <em>الإلكترونية</em></h1>`:`<h1 class="head">The <em>Pharma</em><br>Library</h1>`;
   return `
   <section class="hero">${kick}${title}
@@ -232,7 +280,38 @@ function libraryHTML(){
     </div>
   </section>
   <div class="sec-head"><h2>${q?t('searchResults'):t('onShelves')}</h2><span class="m">${cols.length} ${t('collectionsWord')} · ${t('hoverFolder')}</span></div>
-  <section class="shelves">${folders}</section>`;
+  <section class="shelves">${folders}</section>
+  ${suggestionBoxHTML()}`;
+}
+
+/* ====== suggestion box (public) ====== */
+function suggestionBoxHTML(){
+  const isRTL=lang==='ar';
+  const statusHtml=sugStatus?`<div style="margin-top:14px;padding:14px;border-radius:12px;font-size:14px;${sugStatus==='ok'?'background:var(--herb-3);color:var(--herb)':'background:#fbeae5;color:#b4452f'}">${sugStatus==='ok'?t('sugOk'):sugStatus}</div>`:'';
+  return `
+  <section style="max-width:680px;margin:70px auto 80px;padding:0 clamp(18px,5vw,58px)">
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:clamp(24px,4vw,40px);box-shadow:0 14px 30px -22px rgba(53,39,25,.5)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <span style="font-size:26px">💡</span>
+        <h2 style="font-family:'Fraunces',serif;font-weight:600;font-size:clamp(20px,3vw,26px);margin:0">${t('sugTitle')}</h2>
+      </div>
+      <p style="color:var(--ink-2);font-size:15px;line-height:1.6;margin:0 0 24px">${t('sugDesc')}</p>
+      <div class="field">
+        <label style="font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px">${t('sugName')}</label>
+        <input id="sugName" value="${esc(sugName)}" placeholder="${t('sugPlName')}" style="width:100%;background:var(--canvas);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--ink);font-family:inherit" ${isRTL?'dir="rtl"':''}>
+      </div>
+      <div class="field">
+        <label style="font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px">${t('sugEmail')}</label>
+        <input id="sugEmail" type="email" value="${esc(sugEmail)}" placeholder="${t('sugPlEmail')}" style="width:100%;background:var(--canvas);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--ink);font-family:inherit" dir="ltr">
+      </div>
+      <div class="field">
+        <label style="font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px">${t('sugMessage')}</label>
+        <textarea id="sugMsg" placeholder="${t('sugPlMsg')}" rows="4" style="width:100%;background:var(--canvas);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--ink);font-family:inherit;resize:vertical;box-sizing:border-box" ${isRTL?'dir="rtl"':''}>${esc(sugMsg)}</textarea>
+      </div>
+      ${statusHtml}
+      <button id="sugSendBtn" style="margin-top:16px;background:var(--herb);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-family:'DM Mono';font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.2s">${t('sugSend')}</button>
+    </div>
+  </section>`;
 }
 
 /* ====== collection / folder page ====== */
@@ -448,6 +527,29 @@ function adminHTML(){
       </table></div>
     </div>
 
+    <div class="panel"><div class="pt">${t('adminSugTitle')} ${suggestions.filter(s=>s.status==='new').length?`<span style="background:var(--herb);color:#fff;font-family:'DM Mono';font-size:10px;padding:2px 8px;border-radius:10px">${suggestions.filter(s=>s.status==='new').length}</span>`:''}</div>
+      ${suggestions.length===0?`<p style="color:var(--ink-3)">${t('adminSugEmpty')}</p>`:
+        suggestions.map(s=>`
+        <div style="border:1px solid ${s.status==='new'?'var(--herb)':'var(--line)'};border-radius:13px;padding:18px;margin-bottom:14px;${s.status==='new'?'background:var(--herb-3)':''}">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+            <div>
+              <span style="font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:8px;${s.status==='new'?'background:var(--herb);color:#fff':'background:var(--line-2);color:var(--ink-2)'}">${s.status==='new'?t('adminSugNew'):t('adminSugReplied')}</span>
+              <span style="font-family:'DM Mono';font-size:11px;color:var(--ink-3);margin-inline-start:10px">${new Date(s.created_at).toLocaleDateString(lang==='ar'?'ar-OM':'en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+            </div>
+            <button class="del" data-delsug="${s.id}">${t('adminSugDelete')}</button>
+          </div>
+          <p style="font-size:13px;color:var(--ink-3);margin:0 0 4px"><strong>${t('adminSugFrom')}:</strong> ${esc(s.name||'—')} &nbsp;·&nbsp; <a href="mailto:${esc(s.email)}" style="color:var(--herb)">${esc(s.email)}</a></p>
+          <p style="font-size:15px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap;margin:10px 0">${esc(s.message)}</p>
+          ${s.reply?`<p style="font-size:13px;color:var(--ink-2);border-inline-start:3px solid var(--herb);padding-inline-start:12px;white-space:pre-wrap">${esc(s.reply)}</p>`:`
+          <div style="margin-top:12px">
+            <label style="font-family:'DM Mono';font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:7px">${t('adminSugReplyLabel')}</label>
+            <textarea data-replybox="${s.id}" rows="3" style="width:100%;background:var(--canvas);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+            <button class="mini" style="margin-top:10px" data-sendreply="${s.id}">${t('adminSugReplyBtn')}</button>
+            <span class="live" id="rmsg-${s.id}"></span>
+          </div>`}
+        </div>`).join('')}
+    </div>
+
     <div class="panel"><div class="pt">${t('security')}</div>
       <div class="row">
         <div class="field"><label>${t('currentPass')}</label><input id="curPass" type="password" maxlength="80" style="letter-spacing:.12em"></div>
@@ -543,7 +645,9 @@ async function doLogin(){
   const btn=document.getElementById('doLogin');btn.classList.add('busy');
   try{
     const d=await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
-    authToken=d.token;await loadState();render();
+    authToken=d.token;await loadState();
+    try{const s=await api('/api/admin/suggestions');suggestions=s.suggestions||[];}catch(e){}
+    render();
   }catch(e){
     let msg=t('wrongPass');
     if(e.data&&e.data.error==='locked')msg=`${t('locked')} ${e.data.retryAfter} ${t('secW')}`;
@@ -558,15 +662,34 @@ async function doLogin(){
 function goLib(){view={name:'library',collId:null};render();window.scrollTo({top:0})}
 document.getElementById('brandBtn').onclick=goLib;
 document.getElementById('navLib').onclick=goLib;
-document.getElementById('navDisp').onclick=()=>{view={name:'admin'};render();window.scrollTo({top:0})};
+document.getElementById('navDisp').onclick=async()=>{
+  view={name:'admin'};render();window.scrollTo({top:0});
+  if(authToken){
+    try{const d=await api('/api/admin/suggestions');suggestions=d.suggestions||[];render();}catch(e){}
+  }
+};
 document.getElementById('navLang').onclick=()=>{lang=lang==='en'?'ar':'en';try{localStorage.setItem('sinaw_lang',lang)}catch(e){}applyLang();render();};
 document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 
 /* ====== click handler — on document so modal download works ====== */
 document.addEventListener('click',async e=>{
-  /* retry */
-  if(e.target.id==='retryBtn'){await loadState();render();return;}
+  /* suggestion submit */
+  if(e.target.id==='sugSendBtn'){
+    const email=(document.getElementById('sugEmail')?.value||'').trim();
+    const msg=(document.getElementById('sugMsg')?.value||'').trim();
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){sugStatus=t('sugErrEmail');render();return;}
+    if(!msg){sugStatus=t('sugErrMsg');render();return;}
+    sugName=(document.getElementById('sugName')?.value||'').trim();
+    sugEmail=email;sugMsg=msg;
+    e.target.textContent=t('sugSending');e.target.disabled=true;
+    try{
+      await api('/api/suggest',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:sugName,email:sugEmail,message:sugMsg})});
+      sugStatus='ok';sugName='';sugEmail='';sugMsg='';render();
+    }catch(er){sugStatus=t('sugErrFail');render();}
+    return;
+  }
   /* login */
   if(e.target.id==='doLogin'){doLogin();return;}
   /* sign out */
@@ -604,9 +727,28 @@ document.addEventListener('click',async e=>{
   }
 
   /* delegated — works for both #app and #modal because listener is on document */
-  const tg=e.target.closest('[data-open],[data-lib],[data-read],[data-get],[data-pickcover],[data-setcover],[data-uploadcover],[data-editappear],[data-editdetails],[data-savedetails],[data-edittitle],[data-savetitle],[data-adddoc],[data-savedoc],[data-delfile],[data-delcoll]');
+  const tg=e.target.closest('[data-open],[data-lib],[data-read],[data-get],[data-pickcover],[data-setcover],[data-uploadcover],[data-editappear],[data-editdetails],[data-savedetails],[data-edittitle],[data-savetitle],[data-adddoc],[data-savedoc],[data-delfile],[data-delcoll],[data-sendreply],[data-delsug]');
   if(!tg)return;
 
+  if(tg.dataset.sendreply){
+    const id=tg.dataset.sendreply;
+    const reply=(document.querySelector(`[data-replybox="${id}"]`)?.value||'').trim();
+    if(!reply){toast(lang==='ar'?'اكتب ردًا أولًا':'Write a reply first',true);return;}
+    try{
+      await api('/api/admin/suggestions/'+id+'/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reply})});
+      const m=document.getElementById('rmsg-'+id);if(m){m.textContent=t('adminSugReplySent');}
+      const d=await api('/api/admin/suggestions');suggestions=d.suggestions||[];render();
+    }catch(er){toast(er.message,true);}
+    return;
+  }
+  if(tg.dataset.delsug){
+    if(!confirm(lang==='ar'?'حذف هذا الاقتراح؟':'Delete this suggestion?'))return;
+    try{
+      await api('/api/admin/suggestions/'+tg.dataset.delsug,{method:'DELETE'});
+      const d=await api('/api/admin/suggestions');suggestions=d.suggestions||[];render();
+    }catch(er){toast(er.message,true);}
+    return;
+  }
   if(tg.dataset.lib!==undefined){goLib();return;}
   if(tg.dataset.open){view={name:'collection',collId:tg.dataset.open};render();window.scrollTo({top:0});return;}
   if(tg.dataset.read){openPreview(tg.dataset.read);return;}
@@ -711,6 +853,9 @@ document.getElementById('app').addEventListener('input',e=>{
   if(e.target.id==='nfNameAr'){nfNameAr=e.target.value;return;}
   if(e.target.id==='nfDescEn'){nfDescEn=e.target.value;return;}
   if(e.target.id==='nfDescAr'){nfDescAr=e.target.value;return;}
+  if(e.target.id==='sugName'){sugName=e.target.value;return;}
+  if(e.target.id==='sugEmail'){sugEmail=e.target.value;return;}
+  if(e.target.id==='sugMsg'){sugMsg=e.target.value;return;}
 });
 /* ====== file chosen labels ====== */
 document.addEventListener('change',e=>{
