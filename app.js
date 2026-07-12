@@ -687,7 +687,12 @@ document.addEventListener('click',async e=>{
       await api('/api/suggest',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:sugName,email:sugEmail,message:sugMsg})});
       sugStatus='ok';sugName='';sugEmail='';sugMsg='';render();
-    }catch(er){sugStatus=t('sugErrFail');render();}
+    }catch(er){
+      sugStatus=er.status===429
+        ?(lang==='ar'?'لقد أرسلت عدة رسائل مؤخرًا. يرجى المحاولة بعد ساعة.':'You\'ve sent several messages recently. Please try again in an hour.')
+        :t('sugErrFail');
+      render();
+    }
     return;
   }
   /* login */
